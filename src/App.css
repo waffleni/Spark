@@ -1,8 +1,24 @@
-#root {
-  height: 100vh;
-  width: 100vw;
+body {
+  background: #FAFAFA;
 }
 
-.ui.menu .item:before {
-  background: #d4d4d5;
+.text-center {
+  text-align: center;
+}
+
+.app-title {
+  margin: 0;
+  line-height: 40px;
+}
+
+.company-link {
+  color: black;
+  text-decoration: underline;
+}
+
+.company-link:hover {
+  color: white;
+  background-color: black;
+  padding-left: 5px;
+  padding-right: 5px;
 }

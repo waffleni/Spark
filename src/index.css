@@ -1,4 +1,8 @@
-body {
-  margin: 0;
-  padding: 0;
+
+#root {
+  height: 100vh;
+  width: 100vw;
 }
+
+.no-padding-left { padding-left: 0 !important; }
+.no-padding-right { padding-right: 0 !important; }
