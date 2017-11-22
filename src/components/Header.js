@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Divider } from 'semantic-ui-react'
 
-class Head extends Component {
+class Header extends Component {
   render() {
     return (
       <div> {/* Can Be a Segment with Basic Class */}
@@ -13,4 +13,4 @@ class Head extends Component {
   }
 }
 
-export default Head;
+export default Header;

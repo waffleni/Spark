@@ -7,6 +7,7 @@ import Repo from '../views/Repo';
 import Main from '../views/Main';
 
 class Content extends Component {
+
   showMain = () => {
     console.log('clicked X')
     this.props.onChange(undefined)

@@ -5,9 +5,10 @@ import moment from 'moment';
 import 'semantic-ui-css/semantic.min.css';
 import { Grid } from 'semantic-ui-react';
 
-import Sidebar from './components/Sidebar';
-import Content from './components/Content';
 import Footer from './components/Footer';
+import Header from './components/Header';
+import Main from './views/Main';
+import Repo from './views/Repo';
 
 import './App.css';
 
@@ -45,14 +46,12 @@ class App extends Component {
   render() {
     return (
       <div className="ui" style={{height: '100%'}}>
-        <Grid style={{height: '100%'}}>
-          <Grid.Column width={4} stretched className='no-padding-right'>
-            <Sidebar onChange={this.onAction} activeItem={this.state.activeItem} />
-          </Grid.Column>
-          <Grid.Column width={12} stretched className='no-padding-left'>
-            <Content onChange={this.onAction} activeItem={this.state.activeItem} />
-          </Grid.Column>
-        </Grid>
+        <Header />
+        {this.state.activeItem === undefined
+          ?
+            <Main onChange={this.onAction} />
+          : <Repo onChange={this.onAction} name={this.state.activeItem} />
+        }
         <Footer />
       </div>
     );

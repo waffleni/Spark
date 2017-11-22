@@ -1,11 +1,56 @@
 import React, { Component } from 'react';
 
-import { Divider, Header, List, Image, Grid } from 'semantic-ui-react'
+import { Divider, Header, List, Image, Grid, Segment, Icon, Sidebar } from 'semantic-ui-react'
+import { Bar, Line } from 'react-chartjs-2'
+import Iframe from 'react-iframe'
 
 import gql from 'graphql-tag';
 import moment from 'moment';
 
 import client from '../Client';
+
+import SidebarMenu from '../components/Menu';
+
+const data = {
+  labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+  datasets: [
+    {
+      label: 'My First dataset',
+      backgroundColor: 'rgba(255,99,132,0.2)',
+      borderColor: 'rgba(255,99,132,1)',
+      borderWidth: 1,
+      hoverBackgroundColor: 'rgba(255,99,132,0.4)',
+      hoverBorderColor: 'rgba(255,99,132,1)',
+      data: [65, 59, 80, 81, 56, 55, 40]
+    }
+  ]
+};
+const dataLine = {
+  labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+  datasets: [
+    {
+      label: 'My First dataset',
+      fill: false,
+      lineTension: 0.1,
+      backgroundColor: 'rgba(75,192,192,0.4)',
+      borderColor: 'rgba(75,192,192,1)',
+      borderCapStyle: 'butt',
+      borderDash: [],
+      borderDashOffset: 0.0,
+      borderJoinStyle: 'miter',
+      pointBorderColor: 'rgba(75,192,192,1)',
+      pointBackgroundColor: '#fff',
+      pointBorderWidth: 1,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+      pointHoverBorderColor: 'rgba(220,220,220,1)',
+      pointHoverBorderWidth: 2,
+      pointRadius: 1,
+      pointHitRadius: 10,
+      data: [65, 59, 80, 81, 56, 55, 40]
+    }
+  ]
+};
 
 class Repo extends Component {
 
@@ -34,17 +79,23 @@ class Repo extends Component {
             nameWithOwner
             url
             pushedAt
-            commitComments(first: 20) {
-              edges {
-                node {
-                  commit {
-                    abbreviatedOid
-                    author {
-                      name
+            ref(qualifiedName: "master") {
+              target {
+                ... on Commit {
+                  id
+                  history(first: 10) {
+                    edges {
+                      node {
+                        messageHeadline
+                        abbreviatedOid
+                        message
+                        committedDate
+                        url
+                        author {
+                          name
+                        }
+                      }
                     }
-                    committedDate
-                    message
-                    url
                   }
                 }
               }
@@ -78,11 +129,13 @@ class Repo extends Component {
         repoLink: data.url,
         languages: data.languages,
         collaborators: data.collaborators,
-        commits: data.commitComments
+        commits: data.ref.target.history
       });
     })
     .catch(error => console.log(error))
   }
+
+  // https://api.github.com/repos/waffleni/www/stats/punch_card
 
   render() {
     const collaborators = this.state.collaborators.edges !== undefined
@@ -111,10 +164,10 @@ class Repo extends Component {
     const commits = this.state.commits.edges !== undefined
       ? this.state.commits.edges.map(obj => {
           return (
-            <List.Item key={obj.node.commit.abbreviatedOid}>
+            <List.Item key={obj.node.abbreviatedOid}>
               <List.Content>
-                <List.Header as='a' href={obj.node.commit.author.url}>{obj.node.commit.author.name}</List.Header>
-                <List.Description>{obj.node.commit.abbreviatedOid} - {obj.node.commit.committedDate}</List.Description>
+                <List.Header as='a' href={obj.node.url}>{obj.node.author.name}</List.Header>
+                <List.Description>{obj.node.abbreviatedOid} - {moment(obj.node.committedDate).format('MM/DD/YYYY - hh:m A')}</List.Description>
               </List.Content>
             </List.Item>
           )
@@ -122,38 +175,60 @@ class Repo extends Component {
       : null
 
     return (
-      <div>
-        <List divided relaxed>
-          <List.Item>
-            <List.Icon name='github' size='large' verticalAlign='middle' />
-            <List.Content>
-              <List.Header as='a' href={this.state.repoLink} target='_blank' rel='noopener noreferrer'>{this.state.fullName}</List.Header>
-              <List.Description as='span'>Ultimo cambio {this.state.updatedAt}</List.Description>
-            </List.Content>
-          </List.Item>
-          <List.Item />
-        </List>
-        <Grid>
-          <Grid.Column width={5}>
-            <List divided animated size='large' verticalAlign='middle'>
-              <List.Header>Colaboradores</List.Header>
-              {collaborators}
+      <Sidebar.Pushable as={'div'} className='no-margin'>
+        <SidebarMenu activeItem={this.props.name} onChange={this.props.onChange}/>
+        <Sidebar.Pusher>
+          <Segment basic>
+            <div>
+              <a onClick={() => this.props.onChange(undefined)} style={{color: 'black'}}>
+                <Icon name='remove circle outline' size='big' />
+              </a>
+            </div>
+            <List divided relaxed>
+              <List.Item>
+                <List.Icon name='github' size='large' verticalAlign='middle' />
+                <List.Content>
+                  <List.Header as='a' href={this.state.repoLink} target='_blank' rel='noopener noreferrer'>{this.state.fullName}</List.Header>
+                  <List.Description as='span'>Ultimo cambio {this.state.updatedAt}</List.Description>
+                </List.Content>
+              </List.Item>
+              <List.Item />
             </List>
-            <List divided size='large' verticalAlign='middle'>
-              <List.Header>Lenguajes</List.Header>
-              {languages}
-            </List>
-            <List divided size='large' verticalAlign='middle'>
-              <List.Header>Commits</List.Header>
-              {commits}
-            </List>
-          </Grid.Column>
-          <Grid.Column width={11}>
-            <h3> Chart Area</h3>
-          </Grid.Column>
-        </Grid>
+            <Grid>
+              <Grid.Column width={5}>
+                <List divided animated size='large' verticalAlign='middle'>
+                  <List.Header><strong>Colaboradores</strong></List.Header>
+                  {collaborators}
+                </List>
+                <List divided size='large' verticalAlign='middle'>
+                  <List.Header><strong>Lenguajes</strong></List.Header>
+                  {languages}
+                </List>
+                <List divided size='large' verticalAlign='middle'>
+                  <List.Header><strong>Commits</strong></List.Header>
+                  {commits}
+                </List>
+              </Grid.Column>
+              <Grid.Column width={11}>
+                <div style={{height: 300}}>
+                  <Bar
+                    data={data}
+                    width={'100%'}
+                    height={300}
+                    options={{
+                      maintainAspectRatio: false
+                    }}
+                  />
+                </div>
+                <div  style={{height: 300}}>
+                  <Line data={data} />
+                </div>
+              </Grid.Column>
+            </Grid>
+          </Segment>
+        </Sidebar.Pusher>
+      </Sidebar.Pushable>
 
-      </div>
     )
   }
 }
